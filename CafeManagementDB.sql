@@ -1,0 +1,88 @@
+CREATE DATABASE IF NOT EXISTS CafeManagementDB;
+USE CafeManagementDB;
+
+CREATE TABLE CUSTOMER (
+    Customer_ID INT PRIMARY KEY,
+    Customer_Name VARCHAR(100) NOT NULL,
+    Phone_Number VARCHAR(15) UNIQUE NOT NULL
+);
+
+CREATE TABLE ITEM (
+    Item_ID INT PRIMARY KEY,
+    Item_Name VARCHAR(100) NOT NULL,
+    Price DECIMAL(10,2) NOT NULL CHECK (Price > 0)
+);
+
+CREATE TABLE ORDERS (
+    Order_ID INT PRIMARY KEY,
+    Order_Date DATE NOT NULL,
+    Customer_ID INT NOT NULL,
+    Item_ID INT NOT NULL,
+    FOREIGN KEY (Customer_ID) REFERENCES CUSTOMER(Customer_ID),
+    FOREIGN KEY (Item_ID) REFERENCES ITEM(Item_ID)
+);
+
+INSERT INTO CUSTOMER VALUES 
+(1, 'Ghufran Talal', '0501112222'),
+(2, 'Fatmah Obaid', '0503334444'),
+(3, 'Lujain Mohammed', '0505556666'),
+(4, 'Sarah Ahmed', '0507778888'),
+(5, 'Noaf Khalid', '0509990000');
+
+INSERT INTO ITEM VALUES 
+(101, 'Espresso', 12.00),
+(102, 'Latte', 18.00),
+(103, 'Cappuccino', 17.50),
+(104, 'Croissant', 15.00),
+(105, 'Cheesecake', 22.00);
+
+INSERT INTO ORDERS VALUES 
+(501, '2026-04-20', 1, 102),
+(502, '2026-04-21', 2, 101),
+(503, '2026-04-22', 3, 105),
+(504, '2026-04-23', 4, 103),
+(505, '2026-04-24', 5, 104);
+
+SELECT * FROM CUSTOMER;
+SELECT * FROM ITEM;
+SELECT * FROM ORDERS;
+
+SELECT Customer_Name, Phone_Number
+FROM CUSTOMER
+WHERE Phone_Number LIKE '0505%';
+
+SELECT Item_Name, Price
+FROM ITEM
+WHERE Price > 15;
+
+SELECT Customer_ID, COUNT(*) AS Total_Orders
+FROM ORDERS
+GROUP BY Customer_ID;
+
+
+SELECT AVG(Price) AS Average_Price
+FROM ITEM;
+
+SELECT CUSTOMER.Customer_Name, ITEM.Item_Name, ORDERS.Order_Date
+FROM ORDERS
+JOIN CUSTOMER ON ORDERS.Customer_ID = CUSTOMER.Customer_ID
+JOIN ITEM ON ORDERS.Item_ID = ITEM.Item_ID;
+
+SELECT Customer_Name
+FROM CUSTOMER
+WHERE Customer_ID IN (
+    SELECT Customer_ID
+    FROM ORDERS
+    WHERE Item_ID IN (
+        SELECT Item_ID
+        FROM ITEM
+        WHERE Price > (SELECT AVG(Price) FROM ITEM)
+    )
+);
+CREATE VIEW Order_Report AS
+SELECT CUSTOMER.Customer_Name, ITEM.Item_Name, ORDERS.Order_Date
+FROM ORDERS
+JOIN CUSTOMER ON ORDERS.Customer_ID = CUSTOMER.Customer_ID
+JOIN ITEM ON ORDERS.Item_ID = ITEM.Item_ID;
+
+SELECT * FROM Order_Report;
